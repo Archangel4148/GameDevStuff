@@ -1,3 +1,4 @@
 Pipfile
-DOOM/__pycache__/
+*/__pycache__/
 .idea
+*.exe
