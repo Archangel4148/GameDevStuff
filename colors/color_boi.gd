@@ -1,22 +1,30 @@
 extends CharacterBody2D
 
-@export var max_move_speed = 250
+@export var max_move_speed = 190
 @export var gravity = 1200
-@export var jump_power = 450
+@export var jump_power = 400
 @export var max_jumps = 2
 @export var acceleration = 10
 @export var ground_friction = 18
 @export var air_deceleration = 3
 @export var coyote_time = 0.1  # sec
+@export var push_force = 5
 
 var jump_count = 0
 var coyote_timer = 0
 var was_on_floor = false
 
-var rng = RandomNumberGenerator.new()
+var color_idx = 1
+
+const COLORS = [
+	Color(1, 0, 0),
+	Color(0, 0.8, 0.023),
+	Color(0, 0.69, 1),
+]
 
 func _ready() -> void:
-	randomize_color()
+	# Step back to red to start
+	next_color(true)
 
 func handle_inputs(delta):
 	# Get left/right direction from inputs
@@ -41,10 +49,14 @@ func handle_inputs(delta):
 	if Input.is_action_just_pressed("jump") and jump_count < max_jumps:
 		velocity.y = -(jump_power * (1 - (0.1 * jump_count)))
 		jump_count += 1
+		#$AnimatedSprite2D.play("jumping")
+		pass
 		
 	# Update color
-	if Input.is_action_just_pressed("change_color"):
-		randomize_color()
+	if Input.is_action_just_pressed("cycle_left"):
+		next_color(true)
+	if Input.is_action_just_pressed("cycle_right"):
+		next_color()
 
 func _physics_process(delta: float) -> void:
 	# Gravity
@@ -68,6 +80,8 @@ func _physics_process(delta: float) -> void:
 	# Landing on the ground
 	if on_floor_now and not was_on_floor:
 		$AnimatedSprite2D.play("landing")
+		$"Sound Effect Player".stream = preload("res://assets/sound_effects/ground_hit.wav")
+		$"Sound Effect Player".play()
 		
 	# If the player is in the air, but didn't jump, spend a jump after coyote time passes
 	if not on_floor_now and jump_count == 0 and coyote_timer == 0:
@@ -75,14 +89,53 @@ func _physics_process(delta: float) -> void:
 	
 	# Update floor flag
 	was_on_floor = on_floor_now
+	
+	# Handle pushing
+	for i in range(get_slide_collision_count()):
+		var c = get_slide_collision(i)
+		if c.get_collider() is RigidBody2D:
+			c.get_collider().apply_central_impulse(-c.get_normal() * push_force)
+			
+
+	# Choose the right animation
+	if $AnimatedSprite2D.animation != "landing":
+		if on_floor_now:
+			if (velocity.x) > 10:
+				$AnimatedSprite2D.play("moving")
+			else:
+				$AnimatedSprite2D.play("idle")
+		else:
+			if velocity.y < 0:
+				$AnimatedSprite2D.play("jumping")
+			else:
+				$AnimatedSprite2D.play("falling")
+
+
 
 func color_sprite(color: Color):
 	# Modulate the sprite texture to the target color
 	$AnimatedSprite2D.modulate = color
 
-func randomize_color():
-	# Set the sprite to a random hue
-	var current_color = $AnimatedSprite2D.modulate
-	# Get a random hue of the original color
-	var h = rng.randf_range(0.0, 1.0)
-	color_sprite(Color.from_hsv(h, 1.0, current_color.v))
+func next_color(back=false):
+	var di = -1 if back else 1
+	# Remove collision for the previous color
+	set_collision_mask_value(color_idx + 2, false)
+	
+	# Step the index by one (wrap around at the ends)
+	color_idx = ((color_idx + di) % len(COLORS) + len(COLORS)) % len(COLORS)
+	
+	# Add collision for the new color
+	set_collision_mask_value(color_idx + 2, true)
+	color_sprite(COLORS[color_idx])
+	
+	$"Sound Effect Player".stream = preload("res://assets/sound_effects/phase_sound.wav")
+	$"Sound Effect Player".play()
+
+
+func _on_animated_sprite_2d_animation_finished() -> void:
+	var anim_name = $AnimatedSprite2D.animation
+	if anim_name == "landing":
+		if abs(velocity.x) > 10:
+			$AnimatedSprite2D.play("moving")
+		else:
+			$AnimatedSprite2D.play("idle")
