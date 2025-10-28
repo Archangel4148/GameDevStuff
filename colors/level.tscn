@@ -145,7 +145,7 @@ offset_top = 594.00006
 offset_right = 393.0
 offset_bottom = 615.00006
 rotation = -0.15707964
-text = "Use LMB and RMB to swap colors!"
+text = "Use J and K to swap colors!"
 label_settings = SubResource("LabelSettings_ioo17")
 
 [node name="Matching Colors Text" type="Label" parent="Background"]
