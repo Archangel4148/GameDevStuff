@@ -25,11 +25,12 @@ func stop_music(fade_time: float = 0.5):
 		stop()
 
 func _fade_out_then_play(track_path: String, fade_time: float):
+	var previous_volume = volume_db
 	var tween = create_tween()
 	tween.tween_property(self, "volume_db", -40, fade_time)
 	# When it finishes fading, play the next song
 	tween.tween_callback(func ():
 		stream = load(track_path)
-		volume_db = 0
+		volume_db = previous_volume
 		play()
 	)

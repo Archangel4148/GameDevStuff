@@ -117,12 +117,17 @@ func color_sprite(color: Color):
 	$AnimatedSprite2D.modulate = color
 
 func next_color(back=false):
-	var di = -1 if back else 1
+	var di = -1 if back else 1	
+	# Step the index by one (wrap around at the ends)
+	var new_color_idx = ((color_idx + di) % len(COLORS) + len(COLORS)) % len(COLORS)
+	# Update the color
+	set_color(new_color_idx)
+	
+func set_color(new_color_idx: int):
 	# Remove collision for the previous color
 	set_collision_mask_value(color_idx + 2, false)
 	
-	# Step the index by one (wrap around at the ends)
-	color_idx = ((color_idx + di) % len(COLORS) + len(COLORS)) % len(COLORS)
+	color_idx = new_color_idx
 	
 	# Add collision for the new color
 	set_collision_mask_value(color_idx + 2, true)
