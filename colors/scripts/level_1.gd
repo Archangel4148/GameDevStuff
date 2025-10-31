@@ -39,7 +39,7 @@ func _on_finish_trigger_body_entered(_body: Node2D) -> void:
 
 	# Wait a few seconds before finishing the level
 	var timer := Timer.new()
-	timer.wait_time = 4.5
+	timer.wait_time = 3.75
 	timer.one_shot = true
 	timer.process_mode = Node.PROCESS_MODE_PAUSABLE  # pauses with the game
 	add_child(timer)

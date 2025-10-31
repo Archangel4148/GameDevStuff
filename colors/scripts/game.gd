@@ -26,6 +26,7 @@ func main_menu():
 		current_level_scene = null
 	
 	# Pause everything and show the menu
+	can_be_paused = false
 	get_tree().paused = true
 	$"UI/Main Menu".move_to_front()
 	$"UI/Main Menu".show()
@@ -33,6 +34,9 @@ func main_menu():
 	# Hide the pause and level complete menus
 	$"UI/Pause Menu".hide()
 	$"UI/Level Complete Screen".hide()
+	
+	# Play the menu music
+	MusicManager._fade_out_then_play("res://assets/music/main_menu_music.wav", 0.5)
 
 func pause_unpause() -> void:
 	if not can_be_paused:
@@ -48,6 +52,7 @@ func pause_unpause() -> void:
 		$"UI/Pause Menu".move_to_front()
 		get_tree().paused = true
 		is_paused = true
+		
 
 func load_level(scene_path: String):
 	# Unload the previous level (if any)

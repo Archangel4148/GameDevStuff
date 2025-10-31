@@ -2,6 +2,10 @@ extends AudioStreamPlayer
 
 var current_track_name: String = ""
 
+func _ready():
+	# Music should be allowed to play while the game is paused
+	process_mode = Node.PROCESS_MODE_ALWAYS
+
 func play_track(track_path: String, fade_time: float = 0.5):
 	if current_track_name == track_path:
 		return  # Already playing this one
